@@ -1,0 +1,13 @@
+{
+  "background_color": "#ffffff",
+  "description": "AI-powered meal scanner and nutritional tracking app for logging meals, analyzing macros, and tracking weekly trends.",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "NutriScan",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "NutriScan",
+  "start_url": "/NutriScan/",
+  "theme_color": "#ffffff",
+  "id": "com.nutriscan.app"
+}
