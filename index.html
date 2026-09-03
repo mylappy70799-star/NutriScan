@@ -1,0 +1,2649 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NutriScan - AI Nutrition & Meal Tracker</title>
+    <meta
+      name="description"
+      content="AI-powered meal scanner and nutritional tracking app for logging meals, analyzing macros, and tracking weekly trends."
+    />
+    <meta property="og:title" content="NutriScan - AI Nutrition & Meal Tracker" />
+    <meta
+      property="og:description"
+      content="AI-powered meal scanner and nutritional tracking app for logging meals, analyzing macros, and tracking weekly trends."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Google Material Symbols Outlined -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#006e2f',
+              'primary-container': '#22c55e',
+              'on-primary': '#ffffff',
+              'on-primary-container': '#004b1e',
+              secondary: '#006c49',
+              'secondary-container': '#6cf8bb',
+              'on-secondary-container': '#00714d',
+              tertiary: '#9d4300',
+              'tertiary-container': '#ff8e4d',
+              'on-tertiary-container': '#6d2d00',
+              surface: '#f8f9ff',
+              'surface-container': '#e5eeff',
+              'surface-container-low': '#eff4ff',
+              'surface-container-high': '#dce9ff',
+              'surface-container-highest': '#d3e4fe',
+              'surface-container-lowest': '#ffffff',
+              'surface-variant': '#d3e4fe',
+              'on-surface': '#0b1c30',
+              'on-surface-variant': '#3d4a3d',
+              outline: '#6d7b6c',
+              'outline-variant': '#bccbb9',
+              background: '#f8f9ff',
+              'on-background': '#0b1c30',
+            },
+            fontFamily: {
+              sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Custom CSS Styles -->
+    <style>
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes scaleUp {
+        from {
+          opacity: 0;
+          transform: scale(0.96);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      .animate-fade-in {
+        animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .animate-scale-up {
+        animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        vertical-align: middle;
+        line-height: 1;
+      }
+      .material-symbols-outlined.fill-1 {
+        font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+      }
+      .progress-ring-circle {
+        transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+      }
+      .pb-safe {
+        padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+      }
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+
+    <!-- React 18, ReactDOM 18 & Babel Standalone CDNs -->
+    <script
+      src="https://unpkg.com/react@18/umd/react.production.min.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+      crossorigin
+    ></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body
+    class="bg-background text-on-background font-sans antialiased selection:bg-primary selection:text-white"
+  >
+    <div id="root"></div>
+
+    <!-- Complete Self-Contained NutriScan Application -->
+    <script type="text/babel">
+      const { useState, useEffect, useRef } = React;
+
+      // ==========================================
+      // DATA & CONSTANTS
+      // ==========================================
+      const INITIAL_SCANNED_MEAL = {
+        id: 'scan-current',
+        name: 'Grilled Chicken Salad',
+        time: '1:15 PM',
+        date: 'Today, Oct 26',
+        dateKey: 'today',
+        imageUrl:
+          'https://lh3.googleusercontent.com/aida-public/AB6AXuBsbIHSWGbc1Cp4CxWHIrfYscMSDOebUSYRyvG87O5kXM9Bt2DoijiwkSogni1U-23saVPMhz37piQljfX94y2Wa47C4AdAINLGm-Ogb6hlb1dJi7hccD4ZaTTYcBmzu_3INdDQJZCVA8X3i1tfepAgbKmfdqzEpEH3Y5E5iS7anro8aIE6lWHNuhRXIr8ig2Ek-tPMr0ftXjObaLhjUr0bzwg3buK8fAcNaOQTXbNBhie2bx_mcrRs',
+        imageAlt:
+          'Grilled Chicken Salad with avocado, tomatoes, greens and grilled chicken',
+        calories: 420,
+        protein: 45,
+        proteinLevel: 'High',
+        fats: 18,
+        fatsLevel: 'Moderate',
+        sodium: 320,
+        sodiumLevel: 'Low',
+        fiber: 12,
+        fiberLevel: 'High',
+        carbs: 14,
+        carbsLevel: 'Low',
+        category: 'Lunch',
+        tags: ['High Protein', 'Low Carb'],
+        statusText: 'Scan Successful',
+      };
+
+      const INITIAL_MEALS = [
+        {
+          id: 'meal-1',
+          name: 'Avocado Quinoa Bowl',
+          time: '12:30 PM',
+          date: 'Today, Oct 26',
+          dateKey: 'today',
+          imageUrl:
+            'https://lh3.googleusercontent.com/aida-public/AB6AXuAmEiHD5oirsSi698wrNtCvXyhJcuhyIHjSN7ot1lldiJTBIFhqSz-cxedz2TCGE0flFqPoPwEMtJwqNSNL1oFwPO50ljfzk_vOqAJcNLe4Lv5tFqfZsiB6aC1CBvvlhuEOWlpqnY80UrHswqAkJU3X9t9DjVqqd6JvyP8Mt8UuWJpWscaRcG_BJj6ZbLsl7DCPcQTprHUEwbnfuBHO6BhKNJYNIio63UZaNIGX2Dvg891LuAMpEVXk',
+          imageAlt:
+            'Healthy grain bowl with quinoa, avocado, sweet potato and egg',
+          calories: 650,
+          protein: 24,
+          carbs: 52,
+          fats: 22,
+          sodium: 410,
+          fiber: 9,
+          category: 'Lunch',
+          tags: ['Lunch', 'High Protein'],
+        },
+        {
+          id: 'meal-2',
+          name: 'Green Protein Smoothie',
+          time: '8:15 AM',
+          date: 'Today, Oct 26',
+          dateKey: 'today',
+          imageUrl:
+            'https://lh3.googleusercontent.com/aida-public/AB6AXuDGv8OdsR8vFJenrRkNIJnIfIFhzrF8vUpQ0D9v40Ca0aX4Tej3sorBzYa4IT341yOb3X6Gf7YAEmdnFKJqWNzVSjX_zMLcZ7BS9FKRgMK016vN8cXpKeEwf1FSX8EZqyzzAhYcQjhmk9bsb-WXMdKUxYxhqZ3v9bCuyFy2MBRoiIupWBmzH2OluE6eMt6hx9ansva31_GN28tl2uQDBloEA4a5D_9AqhUkJzB0YK7r_EjXLDOWYt-A',
+          imageAlt: 'Frothy green smoothie in glass jar',
+          calories: 320,
+          protein: 30,
+          carbs: 35,
+          fats: 5,
+          sodium: 180,
+          fiber: 6,
+          category: 'Breakfast',
+          tags: ['Breakfast'],
+        },
+        {
+          id: 'meal-3',
+          name: 'Grilled Salmon & Asparagus',
+          time: '7:45 PM',
+          date: 'Yesterday, Oct 25',
+          dateKey: 'yesterday',
+          imageUrl:
+            'https://lh3.googleusercontent.com/aida-public/AB6AXuCUdZV8pyux7eu0GJY73OsixVh0jlbK0KRc3mFNGdMTMLwQX2qVqEt3TuvcFXOTcBEw8hmbkd_u2rl_fyc-N8btP9Ezt63C8yuuiNgd-BJab35M01F1FjfIEZxDRkB65pwBwwmXBY2gnOKSGPScYAwiycIyL6vmbS-USeOlQU2KZh0SZO6BaVh6i227F5zROCgGnW2-wZ65KPbvJZS_9XhwTj4JI0_RuND2Ms7LAinzLYeLYhhXAiy2',
+          imageAlt: 'Grilled salmon fillet with green asparagus spears',
+          calories: 540,
+          protein: 42,
+          carbs: 12,
+          fats: 28,
+          sodium: 380,
+          fiber: 5,
+          category: 'Dinner',
+          tags: ['Dinner', 'Low Carb'],
+        },
+      ];
+
+      const EXTRA_HISTORY_MEALS = [
+        {
+          id: 'meal-4',
+          name: 'Mediterranean Falafel Bowl',
+          time: '1:00 PM',
+          date: 'Wednesday, Oct 24',
+          dateKey: 'earlier',
+          imageUrl:
+            'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80',
+          imageAlt: 'Crispy falafel with tahini and fresh cucumber salad',
+          calories: 490,
+          protein: 20,
+          carbs: 58,
+          fats: 19,
+          sodium: 490,
+          fiber: 11,
+          category: 'Lunch',
+          tags: ['Lunch', 'Vegetarian', 'High Fiber'],
+        },
+        {
+          id: 'meal-5',
+          name: 'Greek Yogurt & Berry Parfait',
+          time: '7:30 AM',
+          date: 'Wednesday, Oct 24',
+          dateKey: 'earlier',
+          imageUrl:
+            'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=600&q=80',
+          imageAlt: 'Greek yogurt parfait with fresh blueberries and granola',
+          calories: 280,
+          protein: 22,
+          carbs: 34,
+          fats: 4,
+          sodium: 120,
+          fiber: 7,
+          category: 'Breakfast',
+          tags: ['Breakfast', 'High Protein'],
+        },
+        {
+          id: 'meal-6',
+          name: 'Grass-Fed Ribeye with Roasted Broccoli',
+          time: '8:10 PM',
+          date: 'Tuesday, Oct 23',
+          dateKey: 'earlier',
+          imageUrl:
+            'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80',
+          imageAlt: 'Grilled steak with tender steamed broccoli florets',
+          calories: 680,
+          protein: 54,
+          carbs: 9,
+          fats: 46,
+          sodium: 520,
+          fiber: 4,
+          category: 'Dinner',
+          tags: ['Dinner', 'Keto', 'High Protein'],
+        },
+      ];
+
+      const SAMPLE_SCAN_PRESETS = [
+        INITIAL_SCANNED_MEAL,
+        {
+          id: 'sample-quinoa',
+          name: 'Avocado Quinoa Power Bowl',
+          time: '12:30 PM',
+          date: 'Today, Oct 26',
+          dateKey: 'today',
+          imageUrl:
+            'https://lh3.googleusercontent.com/aida-public/AB6AXuAmEiHD5oirsSi698wrNtCvXyhJcuhyIHjSN7ot1lldiJTBIFhqSz-cxedz2TCGE0flFqPoPwEMtJwqNSNL1oFwPO50ljfzk_vOqAJcNLe4Lv5tFqfZsiB6aC1CBvvlhuEOWlpqnY80UrHswqAkJU3X9t9DjVqqd6JvyP8Mt8UuWJpWscaRcG_BJj6ZbLsl7DCPcQTprHUEwbnfuBHO6BhKNJYNIio63UZaNIGX2Dvg891LuAMpEVXk',
+          calories: 650,
+          protein: 24,
+          proteinLevel: 'Moderate',
+          carbs: 52,
+          carbsLevel: 'Moderate',
+          fats: 22,
+          fatsLevel: 'Moderate',
+          sodium: 410,
+          sodiumLevel: 'Moderate',
+          fiber: 9,
+          fiberLevel: 'High',
+          category: 'Lunch',
+          tags: ['Superfood', 'Vegetarian', 'Plant Power'],
+          statusText: 'Scan Successful',
+        },
+        {
+          id: 'sample-smoothie',
+          name: 'Super Green Protein Shake',
+          time: '8:15 AM',
+          date: 'Today, Oct 26',
+          dateKey: 'today',
+          imageUrl:
+            'https://lh3.googleusercontent.com/aida-public/AB6AXuDGv8OdsR8vFJenrRkNIJnIfIFhzrF8vUpQ0D9v40Ca0aX4Tej3sorBzYa4IT341yOb3X6Gf7YAEmdnFKJqWNzVSjX_zMLcZ7BS9FKRgMK016vN8cXpKeEwf1FSX8EZqyzzAhYcQjhmk9bsb-WXMdKUxYxhqZ3v9bCuyFy2MBRoiIupWBmzH2OluE6eMt6hx9ansva31_GN28tl2uQDBloEA4a5D_9AqhUkJzB0YK7r_EjXLDOWYt-A',
+          calories: 320,
+          protein: 30,
+          proteinLevel: 'High',
+          carbs: 35,
+          carbsLevel: 'Moderate',
+          fats: 5,
+          fatsLevel: 'Low',
+          sodium: 180,
+          sodiumLevel: 'Low',
+          fiber: 8,
+          fiberLevel: 'High',
+          category: 'Breakfast',
+          tags: ['Breakfast', 'Hydration', 'High Protein'],
+          statusText: 'Scan Successful',
+        },
+        {
+          id: 'sample-salmon',
+          name: 'Atlantic Salmon & Asparagus',
+          time: '7:45 PM',
+          date: 'Yesterday, Oct 25',
+          dateKey: 'yesterday',
+          imageUrl:
+            'https://lh3.googleusercontent.com/aida-public/AB6AXuCUdZV8pyux7eu0GJY73OsixVh0jlbK0KRc3mFNGdMTMLwQX2qVqEt3TuvcFXOTcBEw8hmbkd_u2rl_fyc-N8btP9Ezt63C8yuuiNgd-BJab35M01F1FjfIEZxDRkB65pwBwwmXBY2gnOKSGPScYAwiycIyL6vmbS-USeOlQU2KZh0SZO6BaVh6i227F5zROCgGnW2-wZ65KPbvJZS_9XhwTj4JI0_RuND2Ms7LAinzLYeLYhhXAiy2',
+          calories: 540,
+          protein: 42,
+          proteinLevel: 'High',
+          carbs: 12,
+          carbsLevel: 'Low',
+          fats: 28,
+          fatsLevel: 'Moderate',
+          sodium: 380,
+          sodiumLevel: 'Low',
+          fiber: 5,
+          fiberLevel: 'Moderate',
+          category: 'Dinner',
+          tags: ['Omega-3', 'Low Carb', 'Heart Healthy'],
+          statusText: 'Scan Successful',
+        },
+      ];
+
+      const INITIAL_WEEKLY_INTAKE = [
+        { day: 'Mon', fullDate: 'Oct 20', calories: 1850 },
+        { day: 'Tue', fullDate: 'Oct 21', calories: 2200 },
+        { day: 'Wed', fullDate: 'Oct 22', calories: 1980 },
+        { day: 'Thu', fullDate: 'Oct 23', calories: 2420, isPeak: true },
+        { day: 'Fri', fullDate: 'Oct 24', calories: 2310 },
+        { day: 'Sat', fullDate: 'Oct 25', calories: 1750 },
+        { day: 'Sun', fullDate: 'Oct 26', calories: 1940 },
+      ];
+
+      const INITIAL_DAILY_TARGETS = {
+        calories: 2200,
+        protein: 150,
+        carbs: 250,
+        fats: 65,
+      };
+
+      const INITIAL_DIETARY_PREFERENCES = {
+        highProtein: true,
+        lowSodium: false,
+        vegetarian: false,
+        glutenFree: false,
+        dairyFree: false,
+      };
+
+      const INITIAL_BADGES = [
+        {
+          id: 'badge-1',
+          name: '7 Day Streak',
+          icon: 'local_fire_department',
+          color: '#ff8e4d',
+          bgColor: 'rgba(255, 142, 77, 0.2)',
+          isLocked: false,
+          description: 'Logged meals for 7 consecutive days without interruption.',
+          unlockedAt: 'Oct 24, 2026',
+        },
+        {
+          id: 'badge-2',
+          name: 'Plant Power',
+          icon: 'eco',
+          color: '#22c55e',
+          bgColor: 'rgba(34, 197, 94, 0.2)',
+          isLocked: false,
+          description:
+            'Ate at least 5 different plant-based whole foods in a single day.',
+          unlockedAt: 'Oct 22, 2026',
+        },
+        {
+          id: 'badge-3',
+          name: 'Hydrated',
+          icon: 'water_drop',
+          color: '#4edea3',
+          bgColor: 'rgba(78, 222, 163, 0.2)',
+          isLocked: false,
+          description: 'Reached daily hydration target of 8+ glasses of water.',
+          unlockedAt: 'Oct 25, 2026',
+        },
+        {
+          id: 'badge-4',
+          name: 'Macro Master',
+          icon: 'lock',
+          color: '#6d7b6c',
+          bgColor: 'rgba(109, 123, 108, 0.15)',
+          isLocked: true,
+          description:
+            'Hit within 5% of all 3 macronutrient targets for 5 straight days.',
+        },
+      ];
+
+      const INITIAL_USER_PROFILE = {
+        name: 'Alex Johnson',
+        role: 'Wellness Enthusiast',
+        level: 12,
+        membership: 'Pro Member',
+        avatarUrl:
+          'https://lh3.googleusercontent.com/aida-public/AB6AXuBFzWaklWmRI57eVrxQYxY9TyWtRepfX9i_8-J0Iuq6_AaLu7RezgnQITUAraJcLcikInSKwM_b5ZdKis1NyOw0fN3_Wkm3yngDxOFOSUn1R6lnT2_IvQVFSvA478TTZeLRKaF4EWoZL1GgjWOvU0K4n8BtXSySS09i71-6gBdi-XOnapKQaxT0XH0IStVtlnVfhlnY4W8CzXDFuHFxRVqFOjefhVY4wV0f3IVM_vOKFJr135yJ2mB7',
+        streakDays: 7,
+      };
+
+      // ==========================================
+      // LOGO COMPONENT
+      // ==========================================
+      const NutriScanLogo = ({ className = '', size = 32, showText = false }) => {
+        return (
+          <div className={`inline-flex items-center gap-2 ${className}`}>
+            <svg
+              width={size}
+              height={size}
+              viewBox="0 0 100 100"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="flex-shrink-0"
+              aria-label="NutriScan Logo"
+            >
+              {/* Apple Leaf */}
+              <path
+                d="M51 29C52 23 57 17 63 17C64 22 61 28 56 30C54 31 52 30 51 29Z"
+                fill="#22c55e"
+              />
+              {/* Apple Shutter Blades Forming Camera Aperture */}
+              <path
+                d="M48 30C41 30 35 34 32 40C30 44 29 49 30 54L42 54C42 46 45 38 48 30Z"
+                fill="#22c55e"
+              />
+              <path
+                d="M52 30C55 38 58 46 58 54L70 54C71 49 70 44 68 40C65 34 59 30 52 30Z"
+                fill="#16a34a"
+              />
+              <path
+                d="M70 56L58 56C56 63 50 68 43 71L46 82C57 82 67 76 70 66C71 63 71 59 70 56Z"
+                fill="#22c55e"
+              />
+              <path
+                d="M41 71C35 68 31 63 30 56L18 56C19 64 24 72 32 77C36 80 41 81 44 82L41 71Z"
+                fill="#15803d"
+              />
+              <circle cx="50" cy="55" r="5" fill="#f8f9ff" />
+            </svg>
+            {showText && (
+              <span className="font-bold tracking-tight text-xl text-primary font-sans">
+                Nutri<span className="text-[#22c55e]">Scan</span>
+              </span>
+            )}
+          </div>
+        );
+      };
+
+      // ==========================================
+      // TOP APP BAR COMPONENT
+      // ==========================================
+      const TopAppBar = ({ activeTab, setActiveTab, userProfile }) => {
+        const [drawerOpen, setDrawerOpen] = useState(false);
+
+        return (
+          <React.Fragment>
+            <header
+              id="top-app-bar"
+              className="bg-surface shadow-sm fixed top-0 w-full z-40 flex items-center justify-between px-4 sm:px-6 h-16 max-w-[1200px] mx-auto left-0 right-0 border-b border-surface-container"
+            >
+              <button
+                id="menu-drawer-toggle"
+                onClick={() => setDrawerOpen(true)}
+                className="flex items-center gap-2 text-primary hover:opacity-80 transition-opacity active:scale-95 cursor-pointer p-1.5 rounded-lg hover:bg-surface-container-low"
+                aria-label="Open menu"
+              >
+                <span className="material-symbols-outlined text-[26px]">menu</span>
+              </button>
+
+              <div
+                onClick={() => setActiveTab('capture')}
+                className="flex items-center gap-2 cursor-pointer select-none"
+              >
+                <NutriScanLogo size={28} />
+                <h1 className="text-2xl font-bold text-primary tracking-tight font-sans">
+                  NutriScan
+                </h1>
+              </div>
+
+              <button
+                id="profile-header-button"
+                onClick={() => setActiveTab('settings')}
+                className="flex items-center hover:opacity-85 transition-opacity active:scale-95 cursor-pointer rounded-full p-0.5 ring-2 ring-primary/20 hover:ring-primary/40"
+                aria-label="View user profile"
+                title={`${userProfile.name} - ${userProfile.membership}`}
+              >
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant">
+                  <img
+                    src={userProfile.avatarUrl}
+                    alt={userProfile.name}
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              </button>
+            </header>
+
+            {drawerOpen && (
+              <div
+                className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex animate-fade-in"
+                onClick={() => setDrawerOpen(false)}
+              >
+                <div
+                  className="w-72 sm:w-80 bg-surface-container-lowest h-full shadow-2xl p-6 flex flex-col justify-between border-r border-surface-container transform transition-transform"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div>
+                    <div className="flex items-center justify-between pb-4 border-b border-surface-container">
+                      <NutriScanLogo size={32} showText={true} />
+                      <button
+                        onClick={() => setDrawerOpen(false)}
+                        className="p-1.5 rounded-full hover:bg-surface-container text-on-surface-variant cursor-pointer"
+                        aria-label="Close menu"
+                      >
+                        <span className="material-symbols-outlined text-xl">
+                          close
+                        </span>
+                      </button>
+                    </div>
+
+                    <div
+                      onClick={() => {
+                        setActiveTab('settings');
+                        setDrawerOpen(false);
+                      }}
+                      className="my-5 p-3 rounded-xl bg-surface-container-low border border-surface-variant flex items-center gap-3 cursor-pointer hover:bg-surface-container transition-colors"
+                    >
+                      <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-primary-container shrink-0">
+                        <img
+                          src={userProfile.avatarUrl}
+                          alt={userProfile.name}
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                      <div className="overflow-hidden">
+                        <h4 className="font-semibold text-on-surface text-sm truncate">
+                          {userProfile.name}
+                        </h4>
+                        <p className="text-xs text-on-surface-variant truncate">
+                          {userProfile.role}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="bg-primary-container/20 text-primary text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                            Level {userProfile.level}
+                          </span>
+                          <span className="text-[10px] text-tertiary-container font-semibold flex items-center">
+                            🔥 {userProfile.streakDays}d Streak
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1 font-medium">
+                      <button
+                        onClick={() => {
+                          setActiveTab('capture');
+                          setDrawerOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors text-left ${
+                          activeTab === 'capture'
+                            ? 'bg-primary-container text-on-primary-container font-semibold'
+                            : 'text-on-surface-variant hover:bg-surface-container'
+                        }`}
+                      >
+                        <span
+                          className={`material-symbols-outlined ${
+                            activeTab === 'capture' ? 'fill-1' : ''
+                          }`}
+                        >
+                          photo_camera
+                        </span>
+                        <span>Capture & Scan</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setActiveTab('insights');
+                          setDrawerOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors text-left ${
+                          activeTab === 'insights'
+                            ? 'bg-primary-container text-on-primary-container font-semibold'
+                            : 'text-on-surface-variant hover:bg-surface-container'
+                        }`}
+                      >
+                        <span
+                          className={`material-symbols-outlined ${
+                            activeTab === 'insights' ? 'fill-1' : ''
+                          }`}
+                        >
+                          dashboard
+                        </span>
+                        <span>Insights & Balance</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setActiveTab('logs');
+                          setDrawerOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors text-left ${
+                          activeTab === 'logs'
+                            ? 'bg-primary-container text-on-primary-container font-semibold'
+                            : 'text-on-surface-variant hover:bg-surface-container'
+                        }`}
+                      >
+                        <span
+                          className={`material-symbols-outlined ${
+                            activeTab === 'logs' ? 'fill-1' : ''
+                          }`}
+                        >
+                          history
+                        </span>
+                        <span>Logs & Trends</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setActiveTab('settings');
+                          setDrawerOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors text-left ${
+                          activeTab === 'settings'
+                            ? 'bg-primary-container text-on-primary-container font-semibold'
+                            : 'text-on-surface-variant hover:bg-surface-container'
+                        }`}
+                      >
+                        <span
+                          className={`material-symbols-outlined ${
+                            activeTab === 'settings' ? 'fill-1' : ''
+                          }`}
+                        >
+                          person
+                        </span>
+                        <span>Settings & Profile</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-surface-container text-xs text-on-surface-variant">
+                    <div className="flex items-center justify-between text-on-surface-variant/80">
+                      <span>NutriScan App</span>
+                      <span className="bg-surface-container px-2 py-0.5 rounded text-[10px]">
+                        v2.4
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[11px] text-outline">
+                      Precision AI nutritional analysis
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </React.Fragment>
+        );
+      };
+
+      // ==========================================
+      // BOTTOM NAVIGATION BAR COMPONENT
+      // ==========================================
+      const BottomNavBar = ({ activeTab, setActiveTab }) => {
+        const navItems = [
+          { id: 'capture', label: 'Capture', icon: 'photo_camera' },
+          { id: 'insights', label: 'Insights', icon: 'dashboard' },
+          { id: 'logs', label: 'Logs', icon: 'history' },
+          { id: 'settings', label: 'Settings', icon: 'person' },
+        ];
+
+        return (
+          <nav
+            id="bottom-navigation-bar"
+            className="fixed bottom-0 left-0 right-0 z-40 bg-surface-container-lowest shadow-[0px_-4px_24px_rgba(0,0,0,0.08)] border-t border-surface-container rounded-t-2xl max-w-lg md:max-w-xl mx-auto"
+          >
+            <div className="flex justify-around items-center px-4 py-2 pb-safe">
+              {navItems.map((item) => {
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    id={`nav-tab-${item.id}`}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`flex flex-col items-center justify-center transition-all duration-200 cursor-pointer active:scale-90 ${
+                      isActive
+                        ? 'bg-primary-container text-on-primary-container font-semibold rounded-full px-5 py-1.5 shadow-xs'
+                        : 'text-on-surface-variant hover:bg-surface-container-low px-4 py-1.5 rounded-full'
+                    }`}
+                  >
+                    <span
+                      className={`material-symbols-outlined text-[24px] ${
+                        isActive ? 'fill-1' : ''
+                      }`}
+                    >
+                      {item.icon}
+                    </span>
+                    <span className="text-xs tracking-tight mt-0.5">
+                      {item.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
+        );
+      };
+
+      // ==========================================
+      // SCAN MODAL COMPONENT
+      // ==========================================
+      const ScanModal = ({ isOpen, onClose, onScanComplete }) => {
+        const [activeMode, setActiveMode] = useState('presets');
+        const [isScanning, setIsScanning] = useState(false);
+        const [uploadedPreview, setUploadedPreview] = useState(null);
+        const [cameraStreamActive, setCameraStreamActive] = useState(false);
+        const [cameraError, setCameraError] = useState(null);
+        const videoRef = useRef(null);
+        const fileInputRef = useRef(null);
+
+        if (!isOpen) return null;
+
+        const startCamera = async () => {
+          setActiveMode('camera');
+          setCameraError(null);
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: 'environment' },
+            });
+            if (videoRef.current) {
+              videoRef.current.srcObject = stream;
+              videoRef.current.play();
+              setCameraStreamActive(true);
+            }
+          } catch (err) {
+            console.warn('Camera access denied or unavailable:', err);
+            setCameraError(
+              'Camera access not granted or unavailable in this view. You can choose a sample or upload a photo!'
+            );
+            setCameraStreamActive(false);
+          }
+        };
+
+        const stopCamera = () => {
+          if (videoRef.current && videoRef.current.srcObject) {
+            const stream = videoRef.current.srcObject;
+            stream.getTracks().forEach((track) => track.stop());
+            videoRef.current.srcObject = null;
+          }
+          setCameraStreamActive(false);
+        };
+
+        const handleClose = () => {
+          stopCamera();
+          onClose();
+        };
+
+        const runScanSimulation = (mealData) => {
+          setIsScanning(true);
+          setTimeout(() => {
+            setIsScanning(false);
+            stopCamera();
+            onScanComplete(mealData);
+            onClose();
+          }, 1200);
+        };
+
+        const handleSelectPreset = (preset) => {
+          runScanSimulation({
+            ...preset,
+            id: `scan-${Date.now()}`,
+            time: new Date().toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+          });
+        };
+
+        const handleFileUpload = (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const url = event.target?.result;
+            setUploadedPreview(url);
+
+            const randomCalories = Math.floor(Math.random() * 250) + 380;
+            const customMeal = {
+              id: `scan-user-${Date.now()}`,
+              name:
+                file.name
+                  .replace(/\.[^/.]+$/, '')
+                  .replace(/[-_]/g, ' ') || 'Fresh Meal Plate',
+              time: new Date().toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              }),
+              date: 'Today, Oct 26',
+              dateKey: 'today',
+              imageUrl: url,
+              calories: randomCalories,
+              protein: Math.floor(randomCalories * 0.08),
+              proteinLevel: 'High',
+              carbs: Math.floor(randomCalories * 0.1),
+              carbsLevel: 'Moderate',
+              fats: Math.floor(randomCalories * 0.03),
+              fatsLevel: 'Moderate',
+              sodium: 290,
+              sodiumLevel: 'Low',
+              fiber: 8,
+              fiberLevel: 'High',
+              category: 'Lunch',
+              tags: ['AI Analyzed', 'Custom Scan'],
+              statusText: 'Scan Successful',
+            };
+
+            runScanSimulation(customMeal);
+          };
+          reader.readAsDataURL(file);
+        };
+
+        return (
+          <div
+            id="scan-modal-backdrop"
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={handleClose}
+          >
+            <div
+              id="scan-modal-dialog"
+              className="bg-surface-container-lowest rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl border border-surface-container animate-scale-up"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between px-5 py-4 border-b border-surface-container">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-2xl">
+                    photo_camera
+                  </span>
+                  <h3 className="font-bold text-on-surface text-lg">
+                    NutriScan Food Scanner
+                  </h3>
+                </div>
+                <button
+                  onClick={handleClose}
+                  className="p-1 rounded-full hover:bg-surface-container text-on-surface-variant cursor-pointer"
+                  aria-label="Close scanner"
+                >
+                  <span className="material-symbols-outlined text-xl">close</span>
+                </button>
+              </div>
+
+              <div className="flex border-b border-surface-container bg-surface-container-low px-4 pt-2">
+                <button
+                  onClick={() => {
+                    stopCamera();
+                    setActiveMode('presets');
+                  }}
+                  className={`flex-1 py-2 text-sm font-semibold border-b-2 text-center transition-colors cursor-pointer ${
+                    activeMode === 'presets'
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-on-surface-variant hover:text-on-surface'
+                  }`}
+                >
+                  Sample Meals
+                </button>
+                <button
+                  onClick={() => {
+                    stopCamera();
+                    setActiveMode('upload');
+                  }}
+                  className={`flex-1 py-2 text-sm font-semibold border-b-2 text-center transition-colors cursor-pointer ${
+                    activeMode === 'upload'
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-on-surface-variant hover:text-on-surface'
+                  }`}
+                >
+                  Upload Photo
+                </button>
+                <button
+                  onClick={startCamera}
+                  className={`flex-1 py-2 text-sm font-semibold border-b-2 text-center transition-colors cursor-pointer ${
+                    activeMode === 'camera'
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-on-surface-variant hover:text-on-surface'
+                  }`}
+                >
+                  Live Camera
+                </button>
+              </div>
+
+              <div className="p-5 max-h-[75vh] overflow-y-auto">
+                {isScanning && (
+                  <div className="relative w-full h-56 rounded-xl bg-surface-container-high overflow-hidden flex flex-col items-center justify-center mb-4">
+                    <div className="absolute inset-0 bg-primary/10"></div>
+                    <div className="absolute left-0 right-0 h-1 bg-primary-container shadow-[0_0_12px_#22c55e] animate-bounce top-1/2"></div>
+                    <span className="material-symbols-outlined text-primary text-5xl animate-spin mb-2">
+                      refresh
+                    </span>
+                    <p className="text-primary font-bold text-base tracking-wide animate-pulse">
+                      Analyzing Nutrients with NutriScan AI...
+                    </p>
+                    <p className="text-xs text-on-surface-variant mt-1">
+                      Estimating calories, proteins, lipids and sodium
+                    </p>
+                  </div>
+                )}
+
+                {!isScanning && activeMode === 'presets' && (
+                  <div className="space-y-3">
+                    <p className="text-xs text-on-surface-variant font-medium">
+                      Choose a sample meal to test instant scanning:
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {SAMPLE_SCAN_PRESETS.map((preset) => (
+                        <div
+                          key={preset.id}
+                          onClick={() => handleSelectPreset(preset)}
+                          className="group border border-surface-variant rounded-xl overflow-hidden cursor-pointer hover:border-primary hover:shadow-md transition-all bg-surface-container-lowest flex flex-row items-center p-2 gap-3"
+                        >
+                          <div className="w-16 h-16 rounded-lg overflow-hidden bg-surface-container shrink-0">
+                            <img
+                              src={preset.imageUrl}
+                              alt={preset.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              referrerPolicy="no-referrer"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-on-surface text-sm truncate group-hover:text-primary transition-colors">
+                              {preset.name}
+                            </h4>
+                            <p className="text-xs font-bold text-primary">
+                              {preset.calories} kcal
+                            </p>
+                            <div className="flex gap-2 text-[10px] text-on-surface-variant mt-0.5">
+                              <span>P: {preset.protein}g</span>
+                              <span>F: {preset.fats}g</span>
+                            </div>
+                          </div>
+                          <span className="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100 transition-opacity pr-1">
+                            arrow_forward_ios
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {!isScanning && activeMode === 'upload' && (
+                  <div className="text-center py-4">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id="food-photo-upload"
+                    />
+                    <label
+                      htmlFor="food-photo-upload"
+                      className="border-2 border-dashed border-outline-variant hover:border-primary rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer bg-surface-container-low hover:bg-surface-container transition-colors"
+                    >
+                      <div className="w-14 h-14 rounded-full bg-primary-container/20 text-primary flex items-center justify-center mb-3">
+                        <span className="material-symbols-outlined text-3xl">
+                          add_a_photo
+                        </span>
+                      </div>
+                      <p className="font-semibold text-on-surface text-sm">
+                        Click or drag food image here
+                      </p>
+                      <p className="text-xs text-on-surface-variant mt-1">
+                        Supports JPG, PNG, WEBP (food plates, drinks, bowls)
+                      </p>
+                    </label>
+
+                    {uploadedPreview && (
+                      <div className="mt-4 p-2 rounded-xl bg-surface-container-low border border-surface-variant flex items-center gap-3">
+                        <img
+                          src={uploadedPreview}
+                          alt="Preview"
+                          className="w-12 h-12 rounded-lg object-cover"
+                        />
+                        <span className="text-xs font-medium text-on-surface">
+                          Image uploaded
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {!isScanning && activeMode === 'camera' && (
+                  <div className="flex flex-col items-center">
+                    {cameraError ? (
+                      <div className="p-4 bg-red-50 text-red-700 border border-red-200 rounded-xl text-center text-sm mb-3">
+                        <p>{cameraError}</p>
+                        <button
+                          onClick={() => setActiveMode('presets')}
+                          className="mt-3 px-4 py-1.5 bg-primary text-on-primary rounded-full text-xs font-semibold cursor-pointer"
+                        >
+                          Use Sample Meals
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="relative w-full aspect-square max-h-72 rounded-xl overflow-hidden bg-black flex items-center justify-center">
+                        <video
+                          ref={videoRef}
+                          autoPlay
+                          playsInline
+                          muted
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-8 border-2 border-white/60 rounded-xl pointer-events-none flex items-center justify-center">
+                          <div className="w-4 h-4 border-t-2 border-l-2 border-primary-container absolute top-0 left-0"></div>
+                          <div className="w-4 h-4 border-t-2 border-r-2 border-primary-container absolute top-0 right-0"></div>
+                          <div className="w-4 h-4 border-b-2 border-l-2 border-primary-container absolute bottom-0 left-0"></div>
+                          <div className="w-4 h-4 border-b-2 border-r-2 border-primary-container absolute bottom-0 right-0"></div>
+                          <span className="text-white/80 text-xs font-medium bg-black/40 px-2 py-1 rounded-md">
+                            Align meal inside box
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {cameraStreamActive && (
+                      <button
+                        onClick={() => {
+                          const preset = SAMPLE_SCAN_PRESETS[0];
+                          runScanSimulation(preset);
+                        }}
+                        className="mt-4 px-6 py-3 bg-primary text-on-primary font-bold rounded-full shadow-lg hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined">camera</span>
+                        Snap Photo
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="px-5 py-3 bg-surface-container-low border-t border-surface-container flex justify-between items-center text-xs text-on-surface-variant">
+                <span>NutriScan Neural Vision</span>
+                <button
+                  onClick={handleClose}
+                  className="hover:underline font-semibold text-primary cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      // ==========================================
+      // CAPTURE SCREEN COMPONENT
+      // ==========================================
+      const CaptureScreen = ({
+        currentMeal,
+        setCurrentMeal,
+        onAddToLog,
+        onNavigateToLogs,
+      }) => {
+        const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+        const [justAdded, setJustAdded] = useState(false);
+
+        const CIRCUMFERENCE = 251.2;
+
+        const proteinPercent = Math.min(
+          100,
+          Math.max(10, (currentMeal.protein / 50) * 100)
+        );
+        const proteinOffset =
+          CIRCUMFERENCE - (CIRCUMFERENCE * proteinPercent) / 100;
+
+        const fiberPercent = Math.min(
+          100,
+          Math.max(10, ((currentMeal.fiber || 10) / 15) * 100)
+        );
+        const fiberOffset = CIRCUMFERENCE - (CIRCUMFERENCE * fiberPercent) / 100;
+
+        const fatsPercent = Math.min(
+          100,
+          Math.max(15, (currentMeal.fats / 40) * 100)
+        );
+        const sodiumPercent = Math.min(
+          100,
+          Math.max(15, ((currentMeal.sodium || 320) / 1000) * 100)
+        );
+
+        const handleAddMeal = () => {
+          onAddToLog(currentMeal);
+          setJustAdded(true);
+          setTimeout(() => {
+            setJustAdded(false);
+          }, 2500);
+        };
+
+        return (
+          <div
+            id="capture-screen-container"
+            className="w-full flex flex-col gap-6 animate-fade-in"
+          >
+            {/* Meal Hero Card */}
+            <section
+              id="meal-result-card"
+              className="w-full bg-surface-container-lowest rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col md:flex-row border border-surface-variant/70"
+            >
+              <div className="relative h-64 md:h-auto md:w-1/2 md:min-h-[320px] overflow-hidden bg-surface-container">
+                <img
+                  src={currentMeal.imageUrl}
+                  alt={currentMeal.name}
+                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  referrerPolicy="no-referrer"
+                />
+                <button
+                  onClick={() => setIsScanModalOpen(true)}
+                  className="absolute bottom-3 right-3 bg-black/60 hover:bg-black/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-md"
+                  title="Scan different food"
+                >
+                  <span className="material-symbols-outlined text-[16px]">
+                    flip_camera_ios
+                  </span>
+                  <span>Switch Photo</span>
+                </button>
+              </div>
+
+              <div className="p-6 md:p-8 flex flex-col justify-center items-center text-center md:w-1/2 md:items-start md:text-left gap-4">
+                <div className="w-full">
+                  <span
+                    id="scan-status-badge"
+                    className="inline-flex items-center gap-1.5 bg-surface-container-high text-on-surface-variant font-semibold text-xs tracking-wider px-3.5 py-1 rounded-full mb-2 uppercase"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                    {currentMeal.statusText || 'Scan Successful'}
+                  </span>
+                  <h2
+                    id="meal-title"
+                    className="text-2xl sm:text-3xl font-extrabold text-on-surface tracking-tight"
+                  >
+                    {currentMeal.name}
+                  </h2>
+                </div>
+
+                <div className="my-1 flex flex-col items-center md:items-start">
+                  <div
+                    id="meal-calories-display"
+                    className="text-5xl font-extrabold text-primary tracking-tighter"
+                  >
+                    {currentMeal.calories}
+                  </div>
+                  <div className="text-base font-medium text-on-surface-variant">
+                    Total Calories
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                  {currentMeal.tags.map((tag, idx) => (
+                    <span
+                      key={idx}
+                      className="bg-surface-container text-on-secondary-container font-semibold text-xs px-3.5 py-1.5 rounded-full"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* Bento Grid */}
+            <section
+              id="nutrition-bento-grid"
+              className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full"
+            >
+              {/* Protein Donut */}
+              <div
+                id="bento-card-protein"
+                className="bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-surface-variant/60 flex flex-col items-center justify-center gap-2 hover:border-primary-container transition-all"
+              >
+                <h3 className="font-semibold text-sm text-on-surface-variant w-full text-left">
+                  Protein
+                </h3>
+                <div className="relative w-24 h-24 flex items-center justify-center my-1">
+                  <svg className="w-full h-full" viewBox="0 0 100 100">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      fill="transparent"
+                      r="40"
+                      stroke="#eff4ff"
+                      strokeWidth="12"
+                    />
+                    <circle
+                      className="progress-ring-circle stroke-primary-container"
+                      cx="50"
+                      cy="50"
+                      fill="transparent"
+                      r="40"
+                      stroke="#22c55e"
+                      strokeDasharray={CIRCUMFERENCE}
+                      strokeDashoffset={proteinOffset}
+                      strokeLinecap="round"
+                      strokeWidth="12"
+                    />
+                  </svg>
+                  <div className="absolute flex flex-col items-center">
+                    <span className="text-xl font-bold text-on-surface">
+                      {currentMeal.protein}g
+                    </span>
+                  </div>
+                </div>
+                <span className="text-sm font-semibold text-primary">
+                  {currentMeal.proteinLevel || 'High'}
+                </span>
+              </div>
+
+              {/* Fats Bar */}
+              <div
+                id="bento-card-fats"
+                className="bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-surface-variant/60 flex flex-col justify-between gap-2 hover:border-tertiary-container transition-all"
+              >
+                <h3 className="font-semibold text-sm text-on-surface-variant">
+                  Fats
+                </h3>
+                <div className="text-2xl sm:text-3xl font-bold text-on-surface my-1">
+                  {currentMeal.fats}g
+                </div>
+                <div className="w-full h-3 bg-surface-container-low rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-tertiary-container rounded-full transition-all duration-700"
+                    style={{ width: `${fatsPercent}%` }}
+                  />
+                </div>
+                <span className="text-sm font-medium text-on-surface-variant">
+                  {currentMeal.fatsLevel || 'Moderate'}
+                </span>
+              </div>
+
+              {/* Sodium Bar */}
+              <div
+                id="bento-card-sodium"
+                className="bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-surface-variant/60 flex flex-col justify-between gap-2 hover:border-secondary-container transition-all"
+              >
+                <h3 className="font-semibold text-sm text-on-surface-variant">
+                  Sodium
+                </h3>
+                <div className="text-2xl sm:text-3xl font-bold text-on-surface my-1">
+                  {currentMeal.sodium || 320}mg
+                </div>
+                <div className="w-full h-3 bg-surface-container-low rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-secondary-container rounded-full transition-all duration-700"
+                    style={{ width: `${sodiumPercent}%` }}
+                  />
+                </div>
+                <span className="text-sm font-semibold text-primary">
+                  {currentMeal.sodiumLevel || 'Low'}
+                </span>
+              </div>
+
+              {/* Fiber Donut */}
+              <div
+                id="bento-card-fiber"
+                className="bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-surface-variant/60 flex flex-col items-center justify-center gap-2 hover:border-primary transition-all"
+              >
+                <h3 className="font-semibold text-sm text-on-surface-variant w-full text-left">
+                  Fiber
+                </h3>
+                <div className="relative w-24 h-24 flex items-center justify-center my-1">
+                  <svg className="w-full h-full" viewBox="0 0 100 100">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      fill="transparent"
+                      r="40"
+                      stroke="#eff4ff"
+                      strokeWidth="12"
+                    />
+                    <circle
+                      className="progress-ring-circle stroke-primary"
+                      cx="50"
+                      cy="50"
+                      fill="transparent"
+                      r="40"
+                      stroke="#006e2f"
+                      strokeDasharray={CIRCUMFERENCE}
+                      strokeDashoffset={fiberOffset}
+                      strokeLinecap="round"
+                      strokeWidth="12"
+                    />
+                  </svg>
+                  <div className="absolute flex flex-col items-center">
+                    <span className="text-xl font-bold text-on-surface">
+                      {currentMeal.fiber || 12}g
+                    </span>
+                  </div>
+                </div>
+                <span className="text-sm font-semibold text-primary">
+                  {currentMeal.fiberLevel || 'High'}
+                </span>
+              </div>
+            </section>
+
+            {/* Actions Area */}
+            <section
+              id="capture-actions"
+              className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-2"
+            >
+              <button
+                id="btn-add-to-log"
+                onClick={handleAddMeal}
+                className={`flex-1 font-semibold text-base py-4 px-6 rounded-full shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer ${
+                  justAdded
+                    ? 'bg-[#22c55e] text-white'
+                    : 'bg-primary text-on-primary hover:bg-[#005a26]'
+                }`}
+              >
+                <span className="material-symbols-outlined text-2xl">
+                  {justAdded ? 'check_circle' : 'add_circle'}
+                </span>
+                <span>{justAdded ? 'Added to Today’s Log!' : 'Add to Log'}</span>
+              </button>
+
+              <button
+                id="btn-retake-photo"
+                onClick={() => setIsScanModalOpen(true)}
+                className="flex-1 bg-surface-container border border-outline-variant text-primary font-semibold text-base py-4 px-6 rounded-full hover:bg-surface-variant transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-2xl">replay</span>
+                <span>Retake Photo</span>
+              </button>
+            </section>
+
+            {justAdded && (
+              <div className="p-4 bg-primary-container/20 border border-primary-container rounded-2xl flex items-center justify-between animate-scale-up">
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-primary text-2xl">
+                    verified
+                  </span>
+                  <div>
+                    <p className="text-sm font-bold text-primary">
+                      "{currentMeal.name}" logged successfully!
+                    </p>
+                    <p className="text-xs text-on-surface-variant">
+                      +{currentMeal.calories} kcal added to today's intake
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={onNavigateToLogs}
+                  className="text-xs font-bold text-primary underline hover:text-[#005a26] cursor-pointer"
+                >
+                  View Logs &rarr;
+                </button>
+              </div>
+            )}
+
+            <ScanModal
+              isOpen={isScanModalOpen}
+              onClose={() => setIsScanModalOpen(false)}
+              onScanComplete={(newMeal) => {
+                setCurrentMeal(newMeal);
+              }}
+            />
+          </div>
+        );
+      };
+
+      // ==========================================
+      // LOGS SCREEN COMPONENT
+      // ==========================================
+      const MealCard = ({ meal, onSelect, isYesterday }) => {
+        return (
+          <article
+            onClick={() => onSelect?.(meal)}
+            className={`bg-surface-container-lowest rounded-2xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] overflow-hidden flex flex-row group hover:shadow-lg transition-all border border-surface-variant cursor-pointer ${
+              isYesterday ? 'opacity-95' : ''
+            }`}
+          >
+            <div className="w-28 sm:w-32 h-28 sm:h-32 flex-shrink-0 overflow-hidden bg-surface-container">
+              <img
+                src={meal.imageUrl}
+                alt={meal.imageAlt || meal.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            <div className="p-3 sm:p-4 flex flex-col justify-between flex-grow min-w-0">
+              <div>
+                <div className="flex justify-between items-start mb-1">
+                  <h5 className="font-bold text-on-surface text-base sm:text-lg leading-tight truncate mr-2">
+                    {meal.name}
+                  </h5>
+                  <span className="text-on-surface-variant font-medium text-xs whitespace-nowrap">
+                    {meal.time}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                  {meal.tags.map((tag, idx) => (
+                    <span
+                      key={idx}
+                      className="bg-[#eff4ff] text-primary px-2.5 py-0.5 rounded-full font-semibold text-[11px]"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="flex justify-between items-end mt-2 pt-2 border-t border-surface-variant/80">
+                <div>
+                  <p className="font-bold text-primary text-base sm:text-lg">
+                    {meal.calories} kcal
+                  </p>
+                </div>
+                <div className="flex gap-3 text-on-surface-variant font-medium text-xs sm:text-sm">
+                  <span>P: {meal.protein}g</span>
+                  <span>C: {meal.carbs}g</span>
+                  <span>F: {meal.fats}g</span>
+                </div>
+              </div>
+            </div>
+          </article>
+        );
+      };
+
+      const LogsScreen = ({ meals, weeklyIntake, onSelectMealForView }) => {
+        const [activeFilter, setActiveFilter] = useState('All');
+        const [filterMenuOpen, setFilterMenuOpen] = useState(false);
+        const [allMeals, setAllMeals] = useState(meals);
+        const [historyLoaded, setHistoryLoaded] = useState(false);
+        const [activeHoveredDay, setActiveHoveredDay] = useState(null);
+
+        useEffect(() => {
+          setAllMeals((prev) => {
+            const existingIds = new Set(prev.map((m) => m.id));
+            const newlyAdded = meals.filter((m) => !existingIds.has(m.id));
+            return [...newlyAdded, ...prev];
+          });
+        }, [meals]);
+
+        const handleLoadMore = () => {
+          if (historyLoaded) return;
+          setAllMeals((prev) => [...prev, ...EXTRA_HISTORY_MEALS]);
+          setHistoryLoaded(true);
+        };
+
+        const filteredMeals = allMeals.filter((meal) => {
+          if (activeFilter === 'All') return true;
+          if (activeFilter === 'Breakfast') return meal.category === 'Breakfast';
+          if (activeFilter === 'Lunch') return meal.category === 'Lunch';
+          if (activeFilter === 'Dinner') return meal.category === 'Dinner';
+          if (activeFilter === 'High Protein')
+            return meal.tags.some((t) => t.toLowerCase().includes('protein'));
+          if (activeFilter === 'Low Carb')
+            return meal.tags.some((t) => t.toLowerCase().includes('low carb'));
+          return true;
+        });
+
+        const todayMeals = filteredMeals.filter((m) => m.dateKey === 'today');
+        const yesterdayMeals = filteredMeals.filter(
+          (m) => m.dateKey === 'yesterday'
+        );
+        const earlierMeals = filteredMeals.filter(
+          (m) => m.dateKey === 'earlier'
+        );
+
+        const totalWeeklyCalories = weeklyIntake.reduce(
+          (acc, curr) => acc + curr.calories,
+          0
+        );
+        const averageDailyCalories = Math.round(
+          totalWeeklyCalories / weeklyIntake.length
+        );
+        const dailyGoal = 2400;
+
+        return (
+          <div
+            id="logs-screen-container"
+            className="w-full flex flex-col animate-fade-in space-y-6"
+          >
+            <section className="pt-2">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-on-surface tracking-tight mb-1">
+                Logs & Trends
+              </h2>
+              <p className="text-base text-on-surface-variant">
+                Track your weekly progress and meal history.
+              </p>
+            </section>
+
+            {/* Weekly Caloric Intake */}
+            <section className="w-full">
+              <div
+                id="weekly-caloric-intake-card"
+                className="bg-surface-container-lowest shadow-[0px_4px_24px_rgba(0,0,0,0.06)] rounded-2xl p-5 sm:p-6 border border-surface-variant/80 relative overflow-hidden"
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-bold text-lg text-on-surface">
+                    Weekly Caloric Intake
+                  </h3>
+                  <div className="flex items-center gap-1.5 bg-surface-container-high text-primary px-3 py-1 rounded-full text-xs font-semibold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    <span>Last 7 Days</span>
+                  </div>
+                </div>
+
+                <div className="relative h-48 w-full flex items-end justify-between gap-2 sm:gap-4 mt-6 pt-6">
+                  <div className="w-full h-full absolute inset-0 flex flex-col justify-between pointer-events-none opacity-25">
+                    <div className="border-b border-outline-variant w-full h-0"></div>
+                    <div className="border-b border-outline-variant w-full h-0"></div>
+                    <div className="border-b border-outline-variant w-full h-0"></div>
+                    <div className="border-b border-outline-variant w-full h-0"></div>
+                  </div>
+
+                  {weeklyIntake.map((item) => {
+                    const maxScale = 2800;
+                    const heightPercent = Math.min(
+                      100,
+                      Math.round((item.calories / maxScale) * 100)
+                    );
+                    const isSelected = activeHoveredDay?.day === item.day;
+
+                    return (
+                      <div
+                        key={item.day}
+                        onMouseEnter={() => setActiveHoveredDay(item)}
+                        onMouseLeave={() => setActiveHoveredDay(null)}
+                        onClick={() => setActiveHoveredDay(item)}
+                        className="flex flex-col items-center gap-2 z-10 group relative flex-1 cursor-pointer h-full justify-end"
+                      >
+                        {isSelected && (
+                          <div className="absolute -top-10 bg-on-surface text-surface text-[11px] font-semibold py-1 px-2.5 rounded-md shadow-lg pointer-events-none whitespace-nowrap z-20 animate-fade-in">
+                            {item.day}: {item.calories} kcal
+                          </div>
+                        )}
+                        <div
+                          className="w-full flex items-end justify-center"
+                          style={{ height: '100%' }}
+                        >
+                          <div
+                            className={`w-full rounded-t-md transition-all duration-300 ${
+                              item.isPeak
+                                ? 'bg-gradient-to-t from-primary to-secondary shadow-sm ring-1 ring-primary/30'
+                                : 'bg-surface-variant group-hover:bg-primary-container'
+                            }`}
+                            style={{ height: `${heightPercent}%` }}
+                          />
+                        </div>
+                        <span
+                          className={`text-xs font-semibold ${
+                            item.isPeak
+                              ? 'text-primary font-bold'
+                              : 'text-on-surface-variant group-hover:text-on-surface'
+                          }`}
+                        >
+                          {item.day}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-surface-container flex items-center justify-between">
+                  <div>
+                    <p className="text-xs sm:text-sm text-on-surface-variant">
+                      Average Daily
+                    </p>
+                    <p className="text-xl sm:text-2xl font-bold text-primary tracking-tight">
+                      {averageDailyCalories.toLocaleString()} kcal
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs sm:text-sm text-on-surface-variant">
+                      Goal
+                    </p>
+                    <p className="text-xl sm:text-2xl font-bold text-on-surface tracking-tight">
+                      {dailyGoal.toLocaleString()} kcal
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Meals Feed */}
+            <section className="space-y-4">
+              <div className="flex justify-between items-center relative">
+                <h3 className="text-xl font-bold text-on-surface">Recent Meals</h3>
+                <div className="relative">
+                  <button
+                    id="btn-filter-meals"
+                    onClick={() => setFilterMenuOpen(!filterMenuOpen)}
+                    className="text-primary font-semibold text-sm flex items-center gap-1 hover:opacity-80 transition-opacity bg-surface-container-low px-3 py-1.5 rounded-full border border-surface-variant cursor-pointer"
+                  >
+                    <span>
+                      {activeFilter === 'All' ? 'Filter' : activeFilter}
+                    </span>
+                    <span className="material-symbols-outlined text-[18px]">
+                      filter_list
+                    </span>
+                  </button>
+
+                  {filterMenuOpen && (
+                    <div
+                      className="absolute right-0 top-10 mt-1 w-44 bg-surface-container-lowest rounded-xl shadow-xl border border-surface-variant p-1.5 z-30 animate-scale-up"
+                      onClick={() => setFilterMenuOpen(false)}
+                    >
+                      {[
+                        'All',
+                        'Breakfast',
+                        'Lunch',
+                        'Dinner',
+                        'High Protein',
+                        'Low Carb',
+                      ].map((filter) => (
+                        <button
+                          key={filter}
+                          onClick={() => setActiveFilter(filter)}
+                          className={`w-full text-left px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+                            activeFilter === filter
+                              ? 'bg-primary text-on-primary'
+                              : 'text-on-surface hover:bg-surface-container'
+                          }`}
+                        >
+                          {filter}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {todayMeals.length > 0 && (
+                  <div>
+                    <h4 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3">
+                      Today, Oct 26
+                    </h4>
+                    <div className="space-y-3">
+                      {todayMeals.map((meal) => (
+                        <MealCard
+                          key={meal.id}
+                          meal={meal}
+                          onSelect={onSelectMealForView}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {yesterdayMeals.length > 0 && (
+                  <div className="pt-2">
+                    <h4 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3">
+                      Yesterday, Oct 25
+                    </h4>
+                    <div className="space-y-3">
+                      {yesterdayMeals.map((meal) => (
+                        <MealCard
+                          key={meal.id}
+                          meal={meal}
+                          onSelect={onSelectMealForView}
+                          isYesterday={true}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {earlierMeals.length > 0 && (
+                  <div className="pt-2">
+                    <h4 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3">
+                      Earlier This Week
+                    </h4>
+                    <div className="space-y-3">
+                      {earlierMeals.map((meal) => (
+                        <MealCard
+                          key={meal.id}
+                          meal={meal}
+                          onSelect={onSelectMealForView}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-center pt-4 pb-4">
+                <button
+                  id="btn-load-more-history"
+                  onClick={handleLoadMore}
+                  disabled={historyLoaded}
+                  className={`font-semibold text-sm px-6 py-2.5 rounded-full transition-colors cursor-pointer ${
+                    historyLoaded
+                      ? 'bg-surface-container text-on-surface-variant/60 cursor-default'
+                      : 'bg-surface-container-high text-primary hover:bg-surface-variant active:scale-95'
+                  }`}
+                >
+                  {historyLoaded
+                    ? 'All Recent History Loaded'
+                    : 'Load More History'}
+                </button>
+              </div>
+            </section>
+          </div>
+        );
+      };
+
+      // ==========================================
+      // SETTINGS SCREEN COMPONENT
+      // ==========================================
+      const SettingsScreen = ({
+        userProfile,
+        setUserProfile,
+        dailyTargets,
+        setDailyTargets,
+        dietaryPreferences,
+        setDietaryPreferences,
+        badges,
+      }) => {
+        const [isEditingTargets, setIsEditingTargets] = useState(false);
+        const [tempTargets, setTempTargets] = useState(dailyTargets);
+        const [selectedBadge, setSelectedBadge] = useState(null);
+        const [saveToast, setSaveToast] = useState(false);
+
+        const handleSaveTargets = () => {
+          setDailyTargets(tempTargets);
+          setIsEditingTargets(false);
+          setSaveToast(true);
+          setTimeout(() => setSaveToast(false), 2000);
+        };
+
+        const handleTogglePreference = (key) => {
+          setDietaryPreferences((prev) => ({
+            ...prev,
+            [key]: !prev[key],
+          }));
+        };
+
+        return (
+          <div
+            id="settings-screen-container"
+            className="w-full flex flex-col space-y-6 animate-fade-in"
+          >
+            {saveToast && (
+              <div className="fixed top-20 right-4 z-50 bg-primary text-on-primary px-4 py-2.5 rounded-full shadow-lg text-xs font-bold flex items-center gap-2 animate-scale-up">
+                <span className="material-symbols-outlined text-base">check</span>
+                Daily targets updated successfully!
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Profile Card & Badges */}
+              <section className="lg:col-span-4 flex flex-col gap-6">
+                <div
+                  id="profile-card"
+                  className="bg-surface-container-lowest rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.06)] p-6 flex flex-col items-center text-center relative overflow-hidden border border-surface-variant/80"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary-container/10 via-transparent to-transparent pointer-events-none"></div>
+
+                  <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-surface shadow-md mb-3 relative z-10 bg-surface-container">
+                    <img
+                      src={userProfile.avatarUrl}
+                      alt={userProfile.name}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+
+                  <h2 className="text-xl font-bold text-on-surface relative z-10">
+                    {userProfile.name}
+                  </h2>
+                  <p className="text-sm text-on-surface-variant relative z-10 mt-0.5">
+                    {userProfile.role}
+                  </p>
+
+                  <div className="mt-4 flex gap-2 relative z-10">
+                    <span className="bg-surface-container-low text-primary font-semibold text-xs px-3.5 py-1 rounded-full border border-surface-variant">
+                      Level {userProfile.level}
+                    </span>
+                    <span className="bg-surface-container-low text-primary font-semibold text-xs px-3.5 py-1 rounded-full border border-surface-variant">
+                      {userProfile.membership}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Badges Card */}
+                <div
+                  id="badges-card"
+                  className="bg-surface-container-lowest rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.06)] p-6 border border-surface-variant/80 flex-1"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-sm text-on-surface">
+                      Badges Earned
+                    </h3>
+                    <span className="text-[11px] font-semibold text-on-surface-variant">
+                      3 of 4 Unlocked
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-2 text-center">
+                    {badges.map((badge) => (
+                      <button
+                        key={badge.id}
+                        onClick={() => setSelectedBadge(badge)}
+                        className={`flex flex-col items-center cursor-pointer group transition-transform active:scale-95 ${
+                          badge.isLocked ? 'opacity-40 grayscale' : ''
+                        }`}
+                        title={`${badge.name}: ${badge.description}`}
+                      >
+                        <div
+                          className={`h-12 w-12 rounded-full flex items-center justify-center mb-1.5 transition-all group-hover:scale-105 ${
+                            badge.isLocked
+                              ? 'bg-surface-variant text-on-surface-variant border border-dashed border-outline'
+                              : ''
+                          }`}
+                          style={
+                            !badge.isLocked
+                              ? {
+                                  backgroundColor: badge.bgColor,
+                                  color: badge.color,
+                                }
+                              : undefined
+                          }
+                        >
+                          <span
+                            className={`material-symbols-outlined text-2xl ${
+                              !badge.isLocked ? 'fill-1' : ''
+                            }`}
+                          >
+                            {badge.icon}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-semibold leading-tight text-on-surface-variant text-center">
+                          {badge.name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* Targets & Preferences */}
+              <section className="lg:col-span-8 flex flex-col gap-6">
+                {/* Daily Targets Card */}
+                <div
+                  id="daily-targets-card"
+                  className="bg-surface-container-lowest rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.06)] p-6 border border-surface-variant/80"
+                >
+                  <div className="flex items-center justify-between mb-5">
+                    <h3 className="text-lg font-bold text-on-surface flex items-center gap-2">
+                      <span className="material-symbols-outlined text-primary text-2xl">
+                        track_changes
+                      </span>
+                      <span>Daily Targets</span>
+                    </h3>
+                    <button
+                      id="btn-edit-targets"
+                      onClick={() => {
+                        if (isEditingTargets) {
+                          handleSaveTargets();
+                        } else {
+                          setTempTargets(dailyTargets);
+                          setIsEditingTargets(true);
+                        }
+                      }}
+                      className="text-primary font-bold text-sm hover:underline cursor-pointer px-3 py-1 rounded-lg hover:bg-surface-container-low transition-colors"
+                    >
+                      {isEditingTargets ? 'Done' : 'Edit'}
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Calories */}
+                    <div className="bg-surface p-4 rounded-xl border border-surface-variant flex flex-col justify-between">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-semibold text-xs sm:text-sm text-on-surface-variant">
+                          Calories
+                        </span>
+                        <span className="material-symbols-outlined text-tertiary-container text-lg">
+                          local_dining
+                        </span>
+                      </div>
+                      {isEditingTargets ? (
+                        <div className="flex items-center gap-2 mt-1">
+                          <input
+                            type="number"
+                            value={tempTargets.calories}
+                            onChange={(e) =>
+                              setTempTargets({
+                                ...tempTargets,
+                                calories: Number(e.target.value),
+                              })
+                            }
+                            className="w-28 p-1.5 text-xl font-bold bg-white border border-primary rounded-lg text-on-surface"
+                          />
+                          <span className="text-xs font-semibold text-on-surface-variant">
+                            kcal
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-end gap-1.5">
+                          <span className="text-3xl sm:text-4xl font-extrabold text-on-surface tracking-tight">
+                            {dailyTargets.calories.toLocaleString()}
+                          </span>
+                          <span className="text-sm font-medium text-on-surface-variant mb-1">
+                            kcal
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Protein */}
+                    <div className="bg-surface p-4 rounded-xl border border-surface-variant flex flex-col justify-between">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-semibold text-xs sm:text-sm text-on-surface-variant">
+                          Protein
+                        </span>
+                        <span className="material-symbols-outlined text-primary-container text-lg">
+                          fitness_center
+                        </span>
+                      </div>
+                      {isEditingTargets ? (
+                        <div className="flex items-center gap-2 mt-1">
+                          <input
+                            type="number"
+                            value={tempTargets.protein}
+                            onChange={(e) =>
+                              setTempTargets({
+                                ...tempTargets,
+                                protein: Number(e.target.value),
+                              })
+                            }
+                            className="w-24 p-1.5 text-xl font-bold bg-white border border-primary rounded-lg text-on-surface"
+                          />
+                          <span className="text-xs font-semibold text-on-surface-variant">
+                            g
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-end gap-1.5">
+                          <span className="text-2xl sm:text-3xl font-extrabold text-on-surface tracking-tight">
+                            {dailyTargets.protein}
+                          </span>
+                          <span className="text-sm font-medium text-on-surface-variant mb-1">
+                            g
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Carbs */}
+                    <div className="bg-surface p-4 rounded-xl border border-surface-variant flex flex-col justify-between">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-semibold text-xs sm:text-sm text-on-surface-variant">
+                          Carbs
+                        </span>
+                        <span className="material-symbols-outlined text-secondary-container text-lg">
+                          grain
+                        </span>
+                      </div>
+                      {isEditingTargets ? (
+                        <div className="flex items-center gap-2 mt-1">
+                          <input
+                            type="number"
+                            value={tempTargets.carbs}
+                            onChange={(e) =>
+                              setTempTargets({
+                                ...tempTargets,
+                                carbs: Number(e.target.value),
+                              })
+                            }
+                            className="w-24 p-1.5 text-xl font-bold bg-white border border-primary rounded-lg text-on-surface"
+                          />
+                          <span className="text-xs font-semibold text-on-surface-variant">
+                            g
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-end gap-1.5">
+                          <span className="text-2xl sm:text-3xl font-extrabold text-on-surface tracking-tight">
+                            {dailyTargets.carbs}
+                          </span>
+                          <span className="text-sm font-medium text-on-surface-variant mb-1">
+                            g
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Fats */}
+                    <div className="bg-surface p-4 rounded-xl border border-surface-variant flex flex-col justify-between">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-semibold text-xs sm:text-sm text-on-surface-variant">
+                          Fats
+                        </span>
+                        <span className="material-symbols-outlined text-outline text-lg">
+                          opacity
+                        </span>
+                      </div>
+                      {isEditingTargets ? (
+                        <div className="flex items-center gap-2 mt-1">
+                          <input
+                            type="number"
+                            value={tempTargets.fats}
+                            onChange={(e) =>
+                              setTempTargets({
+                                ...tempTargets,
+                                fats: Number(e.target.value),
+                              })
+                            }
+                            className="w-24 p-1.5 text-xl font-bold bg-white border border-primary rounded-lg text-on-surface"
+                          />
+                          <span className="text-xs font-semibold text-on-surface-variant">
+                            g
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-end gap-1.5">
+                          <span className="text-2xl sm:text-3xl font-extrabold text-on-surface tracking-tight">
+                            {dailyTargets.fats}
+                          </span>
+                          <span className="text-sm font-medium text-on-surface-variant mb-1">
+                            g
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {isEditingTargets && (
+                    <div className="mt-4 flex justify-end gap-2 pt-3 border-t border-surface-variant">
+                      <button
+                        onClick={() => setIsEditingTargets(false)}
+                        className="px-4 py-1.5 rounded-full text-xs font-semibold text-on-surface-variant hover:bg-surface-container cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveTargets}
+                        className="px-5 py-1.5 rounded-full text-xs font-bold bg-primary text-on-primary shadow-sm hover:opacity-90 cursor-pointer"
+                      >
+                        Save Changes
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Dietary Preferences Card */}
+                <div
+                  id="dietary-preferences-card"
+                  className="bg-surface-container-lowest rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.06)] p-6 border border-surface-variant/80"
+                >
+                  <h3 className="text-lg font-bold text-on-surface mb-5 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary text-2xl">
+                      restaurant_menu
+                    </span>
+                    <span>Dietary Preferences</span>
+                  </h3>
+
+                  <div className="flex flex-col divide-y divide-surface-variant">
+                    {/* High Protein */}
+                    <div
+                      onClick={() => handleTogglePreference('highProtein')}
+                      className="py-3.5 px-2 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer flex items-center justify-between"
+                    >
+                      <div className="pr-4">
+                        <span className="block font-bold text-sm text-on-surface">
+                          High Protein
+                        </span>
+                        <span className="block text-xs text-on-surface-variant mt-0.5">
+                          Prioritize protein-rich meal suggestions.
+                        </span>
+                      </div>
+                      <div
+                        className={`w-12 h-6 rounded-full transition-colors relative flex items-center p-0.5 cursor-pointer shrink-0 ${
+                          dietaryPreferences.highProtein
+                            ? 'bg-primary'
+                            : 'bg-surface-variant border border-outline-variant'
+                        }`}
+                      >
+                        <div
+                          className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform flex items-center justify-center ${
+                            dietaryPreferences.highProtein
+                              ? 'translate-x-6'
+                              : 'translate-x-0'
+                          }`}
+                        >
+                          {dietaryPreferences.highProtein && (
+                            <span className="material-symbols-outlined text-primary text-[14px] font-bold">
+                              check
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Low Sodium */}
+                    <div
+                      onClick={() => handleTogglePreference('lowSodium')}
+                      className="py-3.5 px-2 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer flex items-center justify-between"
+                    >
+                      <div className="pr-4">
+                        <span className="block font-bold text-sm text-on-surface">
+                          Low Sodium
+                        </span>
+                        <span className="block text-xs text-on-surface-variant mt-0.5">
+                          Filter out meals high in salt content.
+                        </span>
+                      </div>
+                      <div
+                        className={`w-12 h-6 rounded-full transition-colors relative flex items-center p-0.5 cursor-pointer shrink-0 ${
+                          dietaryPreferences.lowSodium
+                            ? 'bg-primary'
+                            : 'bg-surface-variant border border-outline-variant'
+                        }`}
+                      >
+                        <div
+                          className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform flex items-center justify-center ${
+                            dietaryPreferences.lowSodium
+                              ? 'translate-x-6'
+                              : 'translate-x-0'
+                          }`}
+                        >
+                          {dietaryPreferences.lowSodium && (
+                            <span className="material-symbols-outlined text-primary text-[14px] font-bold">
+                              check
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Vegetarian */}
+                    <div
+                      onClick={() => handleTogglePreference('vegetarian')}
+                      className="py-3.5 px-2 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer flex items-center justify-between"
+                    >
+                      <div className="pr-4">
+                        <span className="block font-bold text-sm text-on-surface">
+                          Vegetarian
+                        </span>
+                        <span className="block text-xs text-on-surface-variant mt-0.5">
+                          Exclude meat and poultry from recommendations.
+                        </span>
+                      </div>
+                      <div
+                        className={`w-12 h-6 rounded-full transition-colors relative flex items-center p-0.5 cursor-pointer shrink-0 ${
+                          dietaryPreferences.vegetarian
+                            ? 'bg-primary'
+                            : 'bg-surface-variant border border-outline-variant'
+                        }`}
+                      >
+                        <div
+                          className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform flex items-center justify-center ${
+                            dietaryPreferences.vegetarian
+                              ? 'translate-x-6'
+                              : 'translate-x-0'
+                          }`}
+                        >
+                          {dietaryPreferences.vegetarian && (
+                            <span className="material-symbols-outlined text-primary text-[14px] font-bold">
+                              check
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            {/* Badge Dialog */}
+            {selectedBadge && (
+              <div
+                className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4"
+                onClick={() => setSelectedBadge(null)}
+              >
+                <div
+                  className="bg-surface-container-lowest rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl border border-surface-container animate-scale-up"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div
+                    className="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4"
+                    style={{
+                      backgroundColor: selectedBadge.bgColor,
+                      color: selectedBadge.color,
+                    }}
+                  >
+                    <span className="material-symbols-outlined text-3xl">
+                      {selectedBadge.icon}
+                    </span>
+                  </div>
+                  <h4 className="text-xl font-bold text-on-surface">
+                    {selectedBadge.name}
+                  </h4>
+                  <p className="text-xs font-semibold text-primary mt-1">
+                    {selectedBadge.isLocked
+                      ? 'Locked Achievement'
+                      : `Unlocked on ${selectedBadge.unlockedAt}`}
+                  </p>
+                  <p className="text-sm text-on-surface-variant mt-3 leading-relaxed">
+                    {selectedBadge.description}
+                  </p>
+                  <button
+                    onClick={() => setSelectedBadge(null)}
+                    className="mt-6 w-full py-2.5 bg-primary text-on-primary rounded-full font-bold text-sm hover:opacity-90 cursor-pointer"
+                  >
+                    Got it
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      };
+
+      // ==========================================
+      // INSIGHTS SCREEN COMPONENT
+      // ==========================================
+      const InsightsScreen = ({ dailyTargets, dietaryPreferences }) => {
+        const [waterGlasses, setWaterGlasses] = useState(6);
+        const waterTarget = 8;
+
+        const consumedCalories = 1490;
+        const remainingCalories = Math.max(
+          0,
+          dailyTargets.calories - consumedCalories
+        );
+        const calPercent = Math.min(
+          100,
+          Math.round((consumedCalories / dailyTargets.calories) * 100)
+        );
+
+        const consumedProtein = 99;
+        const consumedCarbs = 149;
+        const consumedFats = 45;
+
+        return (
+          <div
+            id="insights-screen-container"
+            className="w-full flex flex-col space-y-6 animate-fade-in"
+          >
+            <section className="pt-2">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-on-surface tracking-tight mb-1">
+                Nutritional Insights
+              </h2>
+              <p className="text-base text-on-surface-variant">
+                Real-time balance, micronutrient targets, and AI dietary analysis.
+              </p>
+            </section>
+
+            {/* Today's Budget Banner */}
+            <section className="w-full bg-surface-container-lowest rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.06)] p-6 border border-surface-variant/80">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div className="flex-1 text-center sm:text-left">
+                  <span className="bg-surface-container-high text-primary text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                    Today's Budget
+                  </span>
+                  <div className="mt-3 flex items-baseline justify-center sm:justify-start gap-2">
+                    <span className="text-4xl sm:text-5xl font-extrabold text-primary tracking-tight">
+                      {remainingCalories}
+                    </span>
+                    <span className="text-base font-semibold text-on-surface-variant">
+                      kcal remaining
+                    </span>
+                  </div>
+                  <p className="text-xs text-on-surface-variant mt-1">
+                    Consumed {consumedCalories} of {dailyTargets.calories} kcal goal
+                    ({calPercent}%)
+                  </p>
+
+                  <div className="w-full h-3 bg-surface-container-low rounded-full overflow-hidden mt-3">
+                    <div
+                      className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-700"
+                      style={{ width: `${calPercent}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3 w-full sm:w-auto">
+                  <div className="bg-surface p-3 rounded-xl border border-surface-variant text-center">
+                    <span className="text-[11px] font-semibold text-on-surface-variant block">
+                      Protein
+                    </span>
+                    <span className="text-lg font-bold text-on-surface">
+                      {consumedProtein}g
+                    </span>
+                    <span className="text-[10px] text-primary block font-medium">
+                      of {dailyTargets.protein}g
+                    </span>
+                  </div>
+                  <div className="bg-surface p-3 rounded-xl border border-surface-variant text-center">
+                    <span className="text-[11px] font-semibold text-on-surface-variant block">
+                      Carbs
+                    </span>
+                    <span className="text-lg font-bold text-on-surface">
+                      {consumedCarbs}g
+                    </span>
+                    <span className="text-[10px] text-secondary block font-medium">
+                      of {dailyTargets.carbs}g
+                    </span>
+                  </div>
+                  <div className="bg-surface p-3 rounded-xl border border-surface-variant text-center">
+                    <span className="text-[11px] font-semibold text-on-surface-variant block">
+                      Fats
+                    </span>
+                    <span className="text-lg font-bold text-on-surface">
+                      {consumedFats}g
+                    </span>
+                    <span className="text-[10px] text-tertiary-container block font-medium">
+                      of {dailyTargets.fats}g
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Macro Ratio & Hydration */}
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Macro Donut */}
+              <div className="bg-surface-container-lowest rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.06)] p-6 border border-surface-variant/80">
+                <h3 className="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary">
+                    pie_chart
+                  </span>
+                  Macronutrient Ratio
+                </h3>
+
+                <div className="flex items-center justify-around py-2">
+                  <div className="relative w-32 h-32 flex items-center justify-center">
+                    <svg className="w-full h-full" viewBox="0 0 100 100">
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="38"
+                        fill="transparent"
+                        stroke="#eff4ff"
+                        strokeWidth="14"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="38"
+                        fill="transparent"
+                        stroke="#22c55e"
+                        strokeWidth="14"
+                        strokeDasharray="238.7"
+                        strokeDashoffset="75"
+                        className="progress-ring-circle"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="38"
+                        fill="transparent"
+                        stroke="#6cf8bb"
+                        strokeWidth="14"
+                        strokeDasharray="238.7"
+                        strokeDashoffset="140"
+                        className="progress-ring-circle"
+                      />
+                    </svg>
+                    <div className="absolute text-center">
+                      <span className="text-xs text-on-surface-variant block font-medium">
+                        Balance
+                      </span>
+                      <span className="text-sm font-bold text-primary">
+                        Optimal
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-primary-container"></span>
+                      <span className="font-semibold text-on-surface">
+                        Protein (30%)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-secondary-container"></span>
+                      <span className="font-semibold text-on-surface">
+                        Carbs (45%)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-tertiary-container"></span>
+                      <span className="font-semibold text-on-surface">
+                        Fats (25%)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Hydration Tracker */}
+              <div className="bg-surface-container-lowest rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.06)] p-6 border border-surface-variant/80 flex flex-col justify-between">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-lg font-bold text-on-surface flex items-center gap-2">
+                    <span className="material-symbols-outlined text-secondary text-2xl">
+                      water_drop
+                    </span>
+                    Hydration Tracker
+                  </h3>
+                  <span className="text-xs font-bold text-secondary bg-surface-container-high px-3 py-1 rounded-full">
+                    {waterGlasses} / {waterTarget} Cups
+                  </span>
+                </div>
+
+                <p className="text-xs text-on-surface-variant mb-4">
+                  Tap a cup to log water intake. Proper hydration aids digestion
+                  and nutrient absorption.
+                </p>
+
+                <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 mb-4">
+                  {Array.from({ length: waterTarget }).map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setWaterGlasses(i + 1)}
+                      className={`p-2 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer active:scale-90 ${
+                        i < waterGlasses
+                          ? 'bg-secondary-container/20 border-secondary text-secondary shadow-xs'
+                          : 'bg-surface border-surface-variant text-on-surface-variant/40 hover:border-secondary/40'
+                      }`}
+                      title={`Cup ${i + 1}`}
+                    >
+                      <span
+                        className={`material-symbols-outlined text-xl ${
+                          i < waterGlasses ? 'fill-1' : ''
+                        }`}
+                      >
+                        local_drink
+                      </span>
+                      <span className="text-[9px] font-bold mt-0.5">{i + 1}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex justify-between items-center pt-2 border-t border-surface-container text-xs">
+                  <span className="text-on-surface-variant">
+                    Daily target: 2,000 ml
+                  </span>
+                  <button
+                    onClick={() =>
+                      setWaterGlasses((prev) => Math.min(waterTarget, prev + 1))
+                    }
+                    className="font-bold text-secondary hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <span className="material-symbols-outlined text-sm">add</span>{' '}
+                    Add Cup
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            {/* AI Nutrition Coach Advice */}
+            <section className="w-full bg-surface-container-lowest rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.06)] p-6 border border-surface-variant/80">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="material-symbols-outlined text-primary text-2xl">
+                  auto_awesome
+                </span>
+                <h3 className="text-lg font-bold text-on-surface">
+                  NutriScan AI Recommendations
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl bg-surface-container-low border border-surface-variant flex gap-3">
+                  <span className="material-symbols-outlined text-primary text-2xl shrink-0 mt-0.5">
+                    check_circle
+                  </span>
+                  <div>
+                    <h4 className="text-sm font-bold text-on-surface">
+                      Optimal Protein Pace
+                    </h4>
+                    <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">
+                      You’re at 66% of your daily protein target with dinner
+                      still ahead. Your post-workout Grilled Chicken Salad
+                      provided an optimal 45g spike for lean muscle recovery.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-xl bg-surface-container-low border border-surface-variant flex gap-3">
+                  <span className="material-symbols-outlined text-tertiary-container text-2xl shrink-0 mt-0.5">
+                    lightbulb
+                  </span>
+                  <div>
+                    <h4 className="text-sm font-bold text-on-surface">
+                      {dietaryPreferences.lowSodium
+                        ? 'Low Sodium Alert'
+                        : 'Fiber Goal Opportunity'}
+                    </h4>
+                    <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">
+                      {dietaryPreferences.lowSodium
+                        ? 'Your meals today have averaged below 350mg sodium per serving, staying comfortably within your cardiovascular targets.'
+                        : 'Add a handful of berries or steamed asparagus for dinner to comfortably reach your 28g daily dietary fiber recommendation.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        );
+      };
+
+      // ==========================================
+      // ROOT APP COMPONENT
+      // ==========================================
+      function App() {
+        const [activeTab, setActiveTab] = useState('capture');
+        const [currentMeal, setCurrentMeal] = useState(INITIAL_SCANNED_MEAL);
+        const [meals, setMeals] = useState(INITIAL_MEALS);
+        const [weeklyIntake, setWeeklyIntake] = useState(INITIAL_WEEKLY_INTAKE);
+        const [dailyTargets, setDailyTargets] = useState(INITIAL_DAILY_TARGETS);
+        const [dietaryPreferences, setDietaryPreferences] = useState(
+          INITIAL_DIETARY_PREFERENCES
+        );
+        const [badges, setBadges] = useState(INITIAL_BADGES);
+        const [userProfile, setUserProfile] = useState(INITIAL_USER_PROFILE);
+
+        const handleAddToLog = (newMeal) => {
+          const mealEntry = {
+            ...newMeal,
+            id: `meal-logged-${Date.now()}`,
+            time: new Date().toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+            date: 'Today, Oct 26',
+            dateKey: 'today',
+          };
+
+          setMeals((prev) => [mealEntry, ...prev]);
+
+          setWeeklyIntake((prev) =>
+            prev.map((item) => {
+              if (item.day === 'Sun') {
+                return {
+                  ...item,
+                  calories: item.calories + newMeal.calories,
+                };
+              }
+              return item;
+            })
+          );
+        };
+
+        const handleSelectMealForView = (meal) => {
+          setCurrentMeal(meal);
+          setActiveTab('capture');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        return (
+          <div className="min-h-screen bg-background text-on-background flex flex-col font-sans antialiased selection:bg-primary selection:text-white">
+            <TopAppBar
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              userProfile={userProfile}
+            />
+
+            <main className="flex-grow pt-20 pb-28 md:pb-24 px-4 sm:px-6 max-w-[1200px] mx-auto w-full">
+              {activeTab === 'capture' && (
+                <CaptureScreen
+                  currentMeal={currentMeal}
+                  setCurrentMeal={setCurrentMeal}
+                  onAddToLog={handleAddToLog}
+                  onNavigateToLogs={() => setActiveTab('logs')}
+                />
+              )}
+
+              {activeTab === 'logs' && (
+                <LogsScreen
+                  meals={meals}
+                  weeklyIntake={weeklyIntake}
+                  onSelectMealForView={handleSelectMealForView}
+                />
+              )}
+
+              {activeTab === 'settings' && (
+                <SettingsScreen
+                  userProfile={userProfile}
+                  setUserProfile={setUserProfile}
+                  dailyTargets={dailyTargets}
+                  setDailyTargets={setDailyTargets}
+                  dietaryPreferences={dietaryPreferences}
+                  setDietaryPreferences={setDietaryPreferences}
+                  badges={badges}
+                />
+              )}
+
+              {activeTab === 'insights' && (
+                <InsightsScreen
+                  dailyTargets={dailyTargets}
+                  dietaryPreferences={dietaryPreferences}
+                />
+              )}
+            </main>
+
+            <BottomNavBar activeTab={activeTab} setActiveTab={setActiveTab} />
+          </div>
+        );
+      }
+
+      // Mount the React root
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        ReactDOM.createRoot(rootElement).render(<App />);
+      }
+    </script>
+  </body>
+</html>

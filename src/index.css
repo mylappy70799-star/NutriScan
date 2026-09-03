@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #006e2f;
+  --color-primary-container: #22c55e;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #004b1e;
+  --color-secondary: #006c49;
+  --color-secondary-container: #6cf8bb;
+  --color-on-secondary-container: #00714d;
+  --color-tertiary: #9d4300;
+  --color-tertiary-container: #ff8e4d;
+  --color-on-tertiary-container: #6d2d00;
+  --color-surface: #f8f9ff;
+  --color-surface-container: #e5eeff;
+  --color-surface-container-low: #eff4ff;
+  --color-surface-container-high: #dce9ff;
+  --color-surface-container-highest: #d3e4fe;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-variant: #d3e4fe;
+  --color-on-surface: #0b1c30;
+  --color-on-surface-variant: #3d4a3d;
+  --color-outline: #6d7b6c;
+  --color-outline-variant: #bccbb9;
+  --color-background: #f8f9ff;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Material Symbols alignment and default */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.material-symbols-outlined.fill-1 {
+  font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Utilities for smooth transitions and progress circles */
+.progress-ring-circle {
+  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+.pb-safe {
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+}
+
+/* Custom scrollbar */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

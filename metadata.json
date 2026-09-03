@@ -1,0 +1,6 @@
+{
+  "name": "NutriScan",
+  "description": "AI-powered meal scanner and nutritional tracking app for logging meals, analyzing macros, and tracking weekly trends.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
